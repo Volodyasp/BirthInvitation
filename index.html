@@ -404,11 +404,17 @@
             filter: grayscale(0.1) contrast(1.05);
         }
 
-        /* Calendar button */
-        #calendar-btn {
+        /* Calendar buttons */
+        .calendar-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .cal-btn {
             font-family: inherit;
             font-size: 1rem;
-            padding: 0.8rem 2rem;
+            padding: 0.8rem 1.5rem;
             border: 1px solid rgba(56, 189, 248, 0.3);
             border-radius: 9999px;
             cursor: pointer;
@@ -416,13 +422,26 @@
             background: rgba(56, 189, 248, 0.1);
             color: var(--link);
             transition: all 0.2s ease;
-            width: 100%;
+            text-decoration: none;
+            text-align: center;
+            display: block;
         }
 
-        #calendar-btn:hover {
+        .cal-btn:hover {
             background: rgba(56, 189, 248, 0.2);
             border-color: var(--link);
             transform: translateY(-2px);
+        }
+
+        .cal-btn.primary {
+            background: rgba(236, 72, 153, 0.12);
+            border-color: rgba(236, 72, 153, 0.3);
+            color: var(--accent-hover);
+        }
+
+        .cal-btn.primary:hover {
+            background: rgba(236, 72, 153, 0.22);
+            border-color: var(--accent);
         }
 
         /* Photos */
@@ -588,8 +607,11 @@
 
         <div class="card">
             <h2>В календарь 📅</h2>
-            <p style="margin-bottom: 1rem;">Скачай файл и добавь событие в свой календарь</p>
-            <button id="calendar-btn">📥 Добавить в календарь (.ics)</button>
+            <p style="margin-bottom: 1rem;">Добавь событие одним тапом</p>
+            <div class="calendar-buttons">
+                <a id="gcal-btn" class="cal-btn primary" target="_blank" rel="noopener">📅 Google Calendar</a>
+                <a id="ical-btn" class="cal-btn" download="birthday-2026-04-12.ics">🍎 Apple / Outlook / .ics</a>
+            </div>
         </div>
 
         <div class="card">
@@ -822,8 +844,24 @@
             countdownInterval = setInterval(tick, 1000);
         }
 
-        // ============ ICS CALENDAR ============
-        document.getElementById('calendar-btn').addEventListener('click', function() {
+        // ============ CALENDAR LINKS ============
+        (function setupCalendarLinks() {
+            const title = 'День рождения в KBBQ';
+            const details = 'Корейское барбекю и настольные игры';
+            const location = 'Gorriti 5675, C1414 CABA, Argentina';
+            // Google Calendar uses floating time; UTC required marker is "Z"
+            // Using floating local time avoids timezone surprises
+            const dates = '20260412T133000/20260412T173000';
+
+            // Google Calendar link
+            const gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+                + '&text=' + encodeURIComponent(title)
+                + '&dates=' + dates
+                + '&details=' + encodeURIComponent(details)
+                + '&location=' + encodeURIComponent(location);
+            document.getElementById('gcal-btn').href = gcalUrl;
+
+            // .ics data URL (works on iOS Safari, Android, desktop)
             const ics = [
                 'BEGIN:VCALENDAR',
                 'VERSION:2.0',
@@ -833,23 +871,15 @@
                 'DTSTAMP:20260405T000000Z',
                 'DTSTART:20260412T133000',
                 'DTEND:20260412T173000',
-                'SUMMARY:День рождения в KBBQ',
-                'LOCATION:Gorriti 5675\\, C1414 CABA\\, Argentina',
-                'DESCRIPTION:Корейское барбекю и настольные игры',
+                'SUMMARY:' + title,
+                'LOCATION:' + location.replace(/,/g, '\\,'),
+                'DESCRIPTION:' + details,
                 'END:VEVENT',
                 'END:VCALENDAR'
             ].join('\r\n');
-
-            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'birthday-2026-04-12.ics';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 100);
-        });
+            document.getElementById('ical-btn').href =
+                'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+        })();
 
         // ============ LIGHTBOX ============
         const lightbox = document.getElementById('lightbox');
