@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>День рождения 12.04</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #0f172a;
+            --bg-end: #312e81;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --accent: #ec4899;
+            --accent-hover: #f472b6;
+            --accent-deep: #be185d;
+            --link: #38bdf8;
+            --link-hover: #bae6fd;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Rotating radial glow */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(236,72,153,0.05) 0%, rgba(0,0,0,0) 50%);
+            animation: rotate 20s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        body.invitation-mode {
+            display: block;
+            align-items: initial;
+            padding: 40px 20px;
+        }
+
+        /* ============ QUESTION SCREEN ============ */
+        #question-screen {
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        #question-screen h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            line-height: 1.3;
+            background: linear-gradient(to right, #f8fafc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 2rem;
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        button.choice {
+            font-family: inherit;
+            font-size: 1.2rem;
+            padding: 0.8rem 2.5rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            color: #fff;
+        }
+
+        #yes-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+            box-shadow: 0 10px 20px -5px rgba(236, 72, 153, 0.5);
+        }
+
+        #yes-btn:hover {
+            transform: scale(1.5);
+            box-shadow: 0 15px 30px -5px rgba(236, 72, 153, 0.7);
+        }
+
+        #no-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: left 0.2s ease, top 0.2s ease, transform 0.2s ease, background 0.2s ease;
+        }
+
+        #no-btn.giving-up {
+            animation: shake 0.6s ease;
+            background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+            color: white;
+            border: none;
+            box-shadow: 0 10px 20px -5px rgba(236, 72, 153, 0.5);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) rotate(-5deg); }
+            20%, 40%, 60%, 80% { transform: translateX(10px) rotate(5deg); }
+        }
+
+        #no-counter {
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            min-height: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #no-counter.visible {
+            opacity: 1;
+        }
+
+        /* ============ CAT MODAL ============ */
+        #cat-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        #cat-modal.visible {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .cat-modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 500px;
+            text-align: center;
+            animation: scaleIn 0.4s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .cat-modal-content img {
+            max-width: 100%;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        .cat-modal-content h3 {
+            font-size: 2rem;
+            color: var(--accent-hover);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        #show-invitation-btn {
+            font-family: inherit;
+            font-size: 1.1rem;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(236, 72, 153, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #show-invitation-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px -5px rgba(236, 72, 153, 0.7);
+        }
+
+        /* ============ INVITATION SCREEN ============ */
+        #invitation-screen {
+            display: none;
+            max-width: 650px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card h2 {
+            color: var(--accent-hover);
+            margin-bottom: 1rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .card strong {
+            color: var(--accent-hover);
+            font-weight: 600;
+        }
+
+        .card a {
+            color: var(--link);
+            text-decoration: none;
+            word-break: break-all;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .card a:hover {
+            color: var(--link-hover);
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+        }
+
+        .header-card {
+            text-align: center;
+            background: var(--glass-bg);
+        }
+
+        .header-card h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #f8fafc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-card p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .emoji-big {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        /* Countdown */
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .countdown-block {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(236, 72, 153, 0.2);
+            border-radius: 16px;
+            padding: 1rem 0.5rem;
+        }
+
+        .countdown-num {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-hover);
+            line-height: 1;
+        }
+
+        .countdown-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+            letter-spacing: 0.1em;
+        }
+
+        #countdown-done {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-hover);
+            display: none;
+        }
+
+        /* Plan list */
+        .plan-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .plan-list li {
+            padding: 0.5rem 0;
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-emoji {
+            display: inline-block;
+            width: 2rem;
+            font-size: 1.3rem;
+        }
+
+        /* Address & map */
+        .map-container {
+            margin-top: 1rem;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 280px;
+            border: 0;
+            display: block;
+            filter: grayscale(0.1) contrast(1.05);
+        }
+
+        /* Calendar button */
+        #calendar-btn {
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 0.8rem 2rem;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 500;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--link);
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        #calendar-btn:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--link);
+            transform: translateY(-2px);
+        }
+
+        /* Photos */
+        .photos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .photos img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photos img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Lightbox */
+        #lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            cursor: zoom-out;
+        }
+
+        #lightbox.visible {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #lightbox img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        #lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #lightbox-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            #question-screen h1 { font-size: 1.8rem; }
+            button.choice { font-size: 1.2rem; padding: 0.8rem 2rem; }
+            .card { padding: 1.5rem; }
+            .card h2 { font-size: 1.5rem; }
+            .header-card h1 { font-size: 2rem; }
+            .countdown-num { font-size: 1.8rem; }
+            .countdown-label { font-size: 0.7rem; }
+            .emoji-big { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- SCREEN 1: QUESTION -->
+    <div id="question-screen">
+        <h1>Ты придёшь на день рождения<br>12.04 в 13:30?</h1>
+        <div class="buttons-container">
+            <button id="yes-btn" class="choice">Да</button>
+            <button id="no-btn" class="choice">Нет</button>
+        </div>
+        <div id="no-counter"></div>
+    </div>
+
+    <!-- CAT MODAL -->
+    <div id="cat-modal">
+        <div class="cat-modal-content">
+            <img src="https://thumbs.dreamstime.com/b/none-119854472.jpg" alt="Котик радуется">
+            <h3>Ура! 🎉 Жду тебя!</h3>
+            <button id="show-invitation-btn">Посмотреть приглашение →</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: INVITATION -->
+    <div id="invitation-screen">
+        <div class="card header-card">
+            <span class="emoji-big">🎉🎂🎈</span>
+            <h1>С днём рождения!</h1>
+            <p>Приглашение</p>
+        </div>
+
+        <div class="card">
+            <h2>Когда и где</h2>
+            <p>В <strong>воскресенье 12.04 в 13:30</strong> приглашаю на празднование дня рождения в <strong>KBBQ</strong>.</p>
+            <p>Это корейский ресторан 🇰🇷</p>
+        </div>
+
+        <div class="card">
+            <h2>До события осталось ⏰</h2>
+            <div class="countdown" id="countdown">
+                <div class="countdown-block">
+                    <div class="countdown-num" id="cd-days">--</div>
+                    <div class="countdown-label">дней</div>
+                </div>
+                <div class="countdown-block">
+                    <div class="countdown-num" id="cd-hours">--</div>
+                    <div class="countdown-label">часов</div>
+                </div>
+                <div class="countdown-block">
+                    <div class="countdown-num" id="cd-mins">--</div>
+                    <div class="countdown-label">минут</div>
+                </div>
+                <div class="countdown-block">
+                    <div class="countdown-num" id="cd-secs">--</div>
+                    <div class="countdown-label">секунд</div>
+                </div>
+            </div>
+            <div id="countdown-done">🎉 Уже сегодня! 🎉</div>
+        </div>
+
+        <div class="card">
+            <h2>План 📋</h2>
+            <ul class="plan-list">
+                <li><span class="plan-emoji">🍖</span>поесть вкусное барбекю</li>
+                <li><span class="plan-emoji">💬</span>непринуждённо пообщаться</li>
+                <li><span class="plan-emoji">🎲</span>поиграть в настольные игры</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Адрес 📍</h2>
+            <p><a href="https://www.google.com/maps/search/?api=1&query=Gorriti+5675+C1414+CABA+Argentina" target="_blank" rel="noopener">Gorriti 5675, C1414 CABA, Argentina ↗</a></p>
+            <div class="map-container">
+                <iframe
+                    src="https://maps.google.com/maps?q=Gorriti+5675,+C1414+CABA,+Argentina&output=embed"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    title="Карта ресторана KBBQ">
+                </iframe>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>В календарь 📅</h2>
+            <p style="margin-bottom: 1rem;">Скачай файл и добавь событие в свой календарь</p>
+            <button id="calendar-btn">📥 Добавить в календарь (.ics)</button>
+        </div>
+
+        <div class="card">
+            <h2>Вишлист 🎁</h2>
+            <p><a href="https://followish.io/mywishlist/iboyuaoinib9vt" target="_blank" rel="noopener">followish.io/mywishlist/iboyuaoinib9vt ↗</a></p>
+        </div>
+
+        <div class="card">
+            <h2>Фотографии ресторана 📸</h2>
+            <div class="photos">
+                <img src="https://lh3.googleusercontent.com/gps-cs-s/AHVAweo4Nuv1E3x56gwEdFVF8ajytU9svBNIK0QKYP62Kb2zfhc2Fw7E_vFY8-DcI980rTXC342AIjPsPmlfWEid4KVk-83mJs1lLWWiqHvIFJTg0fAz-KjUllkhPXNrTSbUWrKXIXsq=s1360-w1360-h1020-rw" alt="KBBQ фото 1" data-lightbox>
+                <img src="https://lh3.googleusercontent.com/gps-cs-s/AHVAwepdoUgQpUEfWPO0b8iAf3DifVE59LgqlLD2YUwevfhrJamrEgZkZtAZC0PYY6A6JOHWIs41_qobJftBrayFMQaBA0q8C7zO3315ik--eHxNTyDlS6_RfHz7Z6xxQa__gggy_fYzSAVxTM4A=s1360-w1360-h1020-rw" alt="KBBQ фото 2" data-lightbox>
+                <img src="https://lh3.googleusercontent.com/gps-cs-s/AHVAweo2w9MZBheBeXrLEf6GRYhyKMwuPK9TUtevaEd54FsP_ZdFT0tyFOONkXEvN0LCqranfyB9BtESyOTbWqC1wqYF3-5ZFuG8qAR2P3iQ6DGcwljhSOTx9K4bikbKKqylGxkmMKuuMczJNhvE=s1360-w1360-h1020-rw" alt="KBBQ фото 3" data-lightbox>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox">
+        <button id="lightbox-close" aria-label="Закрыть">×</button>
+        <img id="lightbox-img" src="" alt="">
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script>
+        // ============ NO BUTTON RUNAWAY ============
+        const noBtn = document.getElementById('no-btn');
+        const yesBtn = document.getElementById('yes-btn');
+        const noCounter = document.getElementById('no-counter');
+        let noCount = 0;
+        const MAX_NO = 5;
+
+        function runAway() {
+            if (noBtn.dataset.givenUp === 'true') return;
+
+            noCount++;
+            updateCounter();
+
+            if (noCount >= MAX_NO) {
+                giveUp();
+                return;
+            }
+
+            const maxX = window.innerWidth - noBtn.offsetWidth - 40;
+            const maxY = window.innerHeight - noBtn.offsetHeight - 40;
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+            noBtn.style.transform = 'rotate(' + (Math.random() * 40 - 20) + 'deg)';
+        }
+
+        function updateCounter() {
+            if (noCount === 0) {
+                noCounter.classList.remove('visible');
+                return;
+            }
+            noCounter.textContent = `Попыток отказаться: ${noCount} 😏`;
+            noCounter.classList.add('visible');
+        }
+
+        function giveUp() {
+            noBtn.dataset.givenUp = 'true';
+            noBtn.classList.add('giving-up');
+            noBtn.textContent = 'Да';
+            noCounter.textContent = 'Сдался! 😄 Теперь обе кнопки — «Да»';
+            yesBtn.style.display = 'none';
+
+            // After shake animation completes, stabilize position
+            setTimeout(() => {
+                noBtn.classList.remove('giving-up');
+            }, 600);
+        }
+
+        noBtn.addEventListener('mouseenter', runAway);
+        noBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            runAway();
+        });
+
+        noBtn.addEventListener('click', function() {
+            if (noBtn.dataset.givenUp === 'true') {
+                openCatModal();
+            }
+        });
+
+        // ============ YES BUTTON → CAT MODAL ============
+        const catModal = document.getElementById('cat-modal');
+        const showInvitationBtn = document.getElementById('show-invitation-btn');
+
+        function fireConfetti() {
+            if (typeof confetti !== 'function') return;
+            try {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            } catch (e) { /* ignore */ }
+        }
+
+        function fireConfettiBurst() {
+            if (typeof confetti !== 'function') return;
+            try {
+                confetti({
+                    particleCount: 80,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.7 }
+                });
+                confetti({
+                    particleCount: 80,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.7 }
+                });
+            } catch (e) { /* ignore */ }
+        }
+
+        function openCatModal() {
+            catModal.classList.add('visible');
+            fireConfetti();
+        }
+
+        yesBtn.addEventListener('click', openCatModal);
+
+        showInvitationBtn.addEventListener('click', function() {
+            catModal.classList.remove('visible');
+            document.getElementById('question-screen').style.display = 'none';
+            document.getElementById('invitation-screen').style.display = 'block';
+            document.body.classList.add('invitation-mode');
+            fireConfettiBurst();
+            revealCards();
+            startCountdown();
+        });
+
+        // ============ SCROLL REVEAL ============
+        function revealCards() {
+            const cards = document.querySelectorAll('.card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            cards.forEach(card => observer.observe(card));
+        }
+
+        // ============ COUNTDOWN ============
+        let countdownInterval = null;
+        function startCountdown() {
+            if (countdownInterval) return;
+            const target = new Date('2026-04-12T13:30:00').getTime();
+            const daysEl = document.getElementById('cd-days');
+            const hoursEl = document.getElementById('cd-hours');
+            const minsEl = document.getElementById('cd-mins');
+            const secsEl = document.getElementById('cd-secs');
+            const countdownEl = document.getElementById('countdown');
+            const doneEl = document.getElementById('countdown-done');
+
+            function tick() {
+                const diff = target - Date.now();
+                if (diff <= 0) {
+                    countdownEl.style.display = 'none';
+                    doneEl.style.display = 'block';
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                const days = Math.floor(diff / 86400000);
+                const hours = Math.floor((diff % 86400000) / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                const secs = Math.floor((diff % 60000) / 1000);
+                daysEl.textContent = days;
+                hoursEl.textContent = String(hours).padStart(2, '0');
+                minsEl.textContent = String(mins).padStart(2, '0');
+                secsEl.textContent = String(secs).padStart(2, '0');
+            }
+
+            tick();
+            countdownInterval = setInterval(tick, 1000);
+        }
+
+        // ============ ICS CALENDAR ============
+        document.getElementById('calendar-btn').addEventListener('click', function() {
+            const ics = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//WebBirthday//RU',
+                'BEGIN:VEVENT',
+                'UID:birthday-2026-04-12@webbirthday',
+                'DTSTAMP:20260405T000000Z',
+                'DTSTART:20260412T133000',
+                'DTEND:20260412T173000',
+                'SUMMARY:День рождения в KBBQ',
+                'LOCATION:Gorriti 5675\\, C1414 CABA\\, Argentina',
+                'DESCRIPTION:Корейское барбекю и настольные игры',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'birthday-2026-04-12.ics';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        });
+
+        // ============ LIGHTBOX ============
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = document.getElementById('lightbox-close');
+
+        document.querySelectorAll('[data-lightbox]').forEach(img => {
+            img.addEventListener('click', function() {
+                lightboxImg.src = this.src;
+                lightboxImg.alt = this.alt;
+                lightbox.classList.add('visible');
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.classList.remove('visible');
+            lightboxImg.src = '';
+        }
+
+        lightbox.addEventListener('click', function(e) {
+            if (e.target === lightbox || e.target === lightboxClose || e.target.closest('#lightbox-close')) {
+                closeLightbox();
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && lightbox.classList.contains('visible')) {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>

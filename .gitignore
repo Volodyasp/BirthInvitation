@@ -1,0 +1,6 @@
+.playwright-mcp/
+.claude/
+*.png
+*.jpeg
+*.jpg
+!docs/**/*.png
