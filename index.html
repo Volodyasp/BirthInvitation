@@ -685,6 +685,13 @@
         const catModal = document.getElementById('cat-modal');
         const showInvitationBtn = document.getElementById('show-invitation-btn');
 
+        function getBbqShape() {
+            if (typeof confetti !== 'function' || typeof confetti.shapeFromText !== 'function') return null;
+            try {
+                return confetti.shapeFromText({ text: '🍖', scalar: 2.5 });
+            } catch (e) { return null; }
+        }
+
         function fireConfetti() {
             if (typeof confetti !== 'function') return;
             try {
@@ -693,6 +700,18 @@
                     spread: 70,
                     origin: { y: 0.6 }
                 });
+                const bbq = getBbqShape();
+                if (bbq) {
+                    confetti({
+                        particleCount: 20,
+                        spread: 90,
+                        shapes: [bbq],
+                        scalar: 2.5,
+                        origin: { y: 0.6 },
+                        gravity: 0.8,
+                        startVelocity: 40
+                    });
+                }
             } catch (e) { /* ignore */ }
         }
 
@@ -711,6 +730,29 @@
                     spread: 55,
                     origin: { x: 1, y: 0.7 }
                 });
+                const bbq = getBbqShape();
+                if (bbq) {
+                    confetti({
+                        particleCount: 15,
+                        angle: 60,
+                        spread: 70,
+                        shapes: [bbq],
+                        scalar: 2.5,
+                        origin: { x: 0, y: 0.7 },
+                        gravity: 0.8,
+                        startVelocity: 45
+                    });
+                    confetti({
+                        particleCount: 15,
+                        angle: 120,
+                        spread: 70,
+                        shapes: [bbq],
+                        scalar: 2.5,
+                        origin: { x: 1, y: 0.7 },
+                        gravity: 0.8,
+                        startVelocity: 45
+                    });
+                }
             } catch (e) { /* ignore */ }
         }
 
