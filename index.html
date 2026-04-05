@@ -660,14 +660,17 @@
             noCounter.textContent = 'Сдался! 😄 Теперь обе кнопки — «Да»';
             yesBtn.style.display = 'none';
 
-            // After shake animation completes, stabilize position
+            // After shake animation completes, clear inline rotation so button sits straight
             setTimeout(() => {
                 noBtn.classList.remove('giving-up');
+                noBtn.style.transform = '';
             }, 600);
         }
 
         noBtn.addEventListener('mouseenter', runAway);
         noBtn.addEventListener('touchstart', function(e) {
+            // After give-up, let the browser handle touch normally so click fires
+            if (noBtn.dataset.givenUp === 'true') return;
             e.preventDefault();
             runAway();
         });
